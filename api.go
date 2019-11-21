@@ -412,6 +412,8 @@ func (c *Commander)GetOpenPositionByAging(w http.ResponseWriter, r *http.Request
     
 
     var Str string
+    var position int
+    var Pos []int
     var aging int
     var Aging []int
     for rows.Next() {
@@ -422,7 +424,7 @@ func (c *Commander)GetOpenPositionByAging(w http.ResponseWriter, r *http.Request
     for i := 0;i<len(names);i++ {
         N := names[i]
         fmt.Println(names[i],len(names))
-        pos,err := db.Query("SELECT created_at FROM open_positions WHERE project_name=? AND flag = 1 ",N)
+        pos,err := db.Query("SELECT created_at,positions FROM open_positions WHERE project_name=? AND flag = 1 ",N)
         if err != nil {
         fmt.Println("error in running query")
         log.Fatal(err)
@@ -432,8 +434,8 @@ func (c *Commander)GetOpenPositionByAging(w http.ResponseWriter, r *http.Request
         t := t1.Format("2006-01-02")
         fmt.Println(t)
         for pos.Next() {
-            pos.Scan(&Str)
-            fmt.Println(Str)
+            pos.Scan(&Str,&position)
+            fmt.Println(Str,position)
             DataDiff,err := db.Query("SELECT DATEDIFF(?,?)",t,Str)           
             if err != nil {
                 fmt.Println("error in running query")
@@ -445,6 +447,7 @@ func (c *Commander)GetOpenPositionByAging(w http.ResponseWriter, r *http.Request
             }
             fmt.Println(aging)
             Aging = append(Aging,aging)
+            Pos = append(Pos,position)
 
       	}
         count1 := 0
@@ -455,29 +458,30 @@ func (c *Commander)GetOpenPositionByAging(w http.ResponseWriter, r *http.Request
         count6 := 0
         for j =0 ; j<len(Aging);j++{
            
-            fmt.Println(Aging[j])
+            fmt.Println(Aging[j],Pos[j])
 
             if Aging[j] < 15{
-                 count1++
+                 count1 = count1 + Pos[j]
        
             }else if Aging[j] > 15&& Aging[j]<30{
-                 count2++
+                 count2 = count2 + Pos[j]
        
             }else if Aging[j] > 30&& Aging[j]<60{
-                 count3++
+                 count3 = count3 + Pos[j]
        
             }else if Aging[j] > 60&& Aging[j]<90{
-                 count4++
+                 count4 = count4 + Pos[j]
        
             }else if Aging[j] > 90&& Aging[j]<120{
-                 count5++
+                 count5 = count5 + Pos[j]
        
             }else{
-                 count6++
+                 count6 = count6 + Pos[j]
        
             }
         }
         Aging = nil
+        Pos = nil
         pro.ProjectName = N
         pro.Between0to15 = count1
         pro.Between15to30 = count2
