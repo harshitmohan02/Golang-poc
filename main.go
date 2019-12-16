@@ -1,10 +1,12 @@
 package main
 
-
+import(
+     handle "projectname_projectmanager/handler"
+)
 
 
 func main() {
 
-	handleRequests()
+	handle.HandleRequests()
 
 }
